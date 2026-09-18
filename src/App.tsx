@@ -16,6 +16,9 @@ import { RiskHistoryPage } from '@/pages/RiskHistoryPage';
 import { IntelligencePage } from '@/pages/IntelligencePage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import type { ReactNode } from 'react';
+import { useEffect } from 'react';
+import { getSettings } from '@/lib/storage';
+import { applyTheme } from '@/lib/theme';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -53,6 +56,10 @@ function AppRoutes() {
 }
 
 function App() {
+  useEffect(() => {
+    applyTheme(getSettings().darkMode);
+  }, []);
+
   return (
     <AuthProvider>
       <ToastProvider>
