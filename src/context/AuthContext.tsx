@@ -10,7 +10,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   login: (email: string, password: string) => void;
   signup: (name: string, email: string, password: string) => void;
-  loginDemo: () => void;
+  updateProfile: (name: string) => void;
   logout: () => void;
 }
 
@@ -42,10 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
   };
 
-  const loginDemo = () => {
-    const u = { name: 'Demo Guardian', email: 'demo@scamguardian.ai' };
-    setAuth(u);
-    setUser(u);
+  const updateProfile = (name: string) => {
+    const trimmedName = name.trim();
+    if (!trimmedName || !user) return;
+    const updatedUser = { ...user, name: trimmedName };
+    setAuth(updatedUser);
+    setUser(updatedUser);
   };
 
   const logout = () => {
@@ -54,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, loginDemo, logout }}>
+    <AuthContext.Provider value={{ user, login, signup, updateProfile, logout }}>
       {children}
     </AuthContext.Provider>
   );
