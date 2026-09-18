@@ -7,6 +7,7 @@ import {
 import { getSettings, setSettings, clearHistory, type AppSettings } from '@/lib/storage';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { applyTheme } from '@/lib/theme';
 
 interface ToggleProps {
   label: string;
@@ -29,6 +30,7 @@ function Toggle({ label, description, value, onChange, icon: Icon }: ToggleProps
         </div>
       </div>
       <button
+        type="button"
         onClick={() => onChange(!value)}
         className={`relative w-12 h-6 rounded-full transition-all shrink-0 ${value ? 'bg-cyan-glow' : 'bg-ink-600'}`}
         role="switch"
@@ -39,20 +41,29 @@ function Toggle({ label, description, value, onChange, icon: Icon }: ToggleProps
           className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md"
           animate={{ left: value ? '26px' : '2px' }}
           transition={{ duration: 0.2 }}
-      />
+        />
       </button>
     </div>
   );
 }
 
 export function SettingsPage() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const { toast } = useToast();
   const [settings, setSettingsState] = useState<AppSettings>(getSettings);
   const [name, setName] = useState(user?.name ?? '');
 
   const handleSave = () => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      toast('Name cannot be empty', 'warning');
+      return;
+    }
+
+    updateProfile(trimmedName);
+    setName(trimmedName);
     setSettings(settings);
+    applyTheme(settings.darkMode);
     toast('Settings saved successfully');
   };
 
@@ -63,6 +74,9 @@ export function SettingsPage() {
 
   const updateSetting = (key: keyof AppSettings, value: boolean) => {
     setSettingsState((prev) => ({ ...prev, [key]: value }));
+    if (key === 'darkMode') {
+      applyTheme(value);
+    }
   };
 
   return (
@@ -77,7 +91,6 @@ export function SettingsPage() {
         <p className="text-gray-400">Manage your account, security, and preferences.</p>
       </div>
 
-      {/* Profile */}
       <div className="glass-panel p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 rounded-xl bg-cyan/10 border border-cyan/20 flex items-center justify-center">
@@ -97,7 +110,6 @@ export function SettingsPage() {
         </div>
       </div>
 
-      {/* Security */}
       <div className="glass-panel p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 rounded-xl bg-cyan/10 border border-cyan/20 flex items-center justify-center">
@@ -112,7 +124,6 @@ export function SettingsPage() {
         </div>
       </div>
 
-      {/* Privacy */}
       <div className="glass-panel p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 rounded-xl bg-cyan/10 border border-cyan/20 flex items-center justify-center">
@@ -132,14 +143,13 @@ export function SettingsPage() {
                 <p className="text-xs text-gray-500">Delete all saved analyses, alerts, and history</p>
               </div>
             </div>
-            <button onClick={handleClearHistory} className="px-4 py-2 rounded-lg text-sm font-body font-semibold text-critical bg-critical/10 hover:bg-critical/20 border border-critical/30 transition-all shrink-0">
+            <button type="button" onClick={handleClearHistory} className="px-4 py-2 rounded-lg text-sm font-body font-semibold text-critical bg-critical/10 hover:bg-critical/20 border border-critical/30 transition-all shrink-0">
               Clear
             </button>
           </div>
         </div>
       </div>
 
-      {/* Appearance */}
       <div className="glass-panel p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 rounded-xl bg-cyan/10 border border-cyan/20 flex items-center justify-center">
@@ -150,9 +160,8 @@ export function SettingsPage() {
         <Toggle label="Dark Mode" description="Use dark theme (recommended for this app)" value={settings.darkMode} onChange={(v) => updateSetting('darkMode', v)} icon={Palette} />
       </div>
 
-      {/* Save button */}
       <div className="flex justify-end">
-        <button onClick={handleSave} className="btn-primary">
+        <button type="button" onClick={handleSave} className="btn-primary">
           <Save className="w-4 h-4" /> Save Settings
         </button>
       </div>
